@@ -1,0 +1,1 @@
+web: gunicorn python_interview_app.wsgi
