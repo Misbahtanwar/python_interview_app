@@ -13,7 +13,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 # Django default settings
 SECRET_KEY = 'django-insecure-st)%n-m+k99y0n5h1bqq7*8nzp1!ku78v%dyy&$!a7*z(8j4q6'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['python-interview-app.onrender.com', 'localhost', '127.0.0.1', '.onrender.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -85,4 +85,5 @@ CORS_ALLOW_ALL_ORIGINS = True
 # ✅ FILE UPLOAD/STORAGE SETTINGS (MEDIA)
 MEDIA_URL = '/media/'
 # Files ko project root ke andar 'media' folder mein save karein
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
