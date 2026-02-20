@@ -34,11 +34,14 @@ class ChatbotView(APIView):
         user_message = request.data.get('message', '').strip() 
         if not user_message:
             return Response({"error": "No message provided"}, status=400)
-        
-        SYSTEM_PROMPT = (
-           "You are a helpful Interviewer. **Talk like a human. Do not use symbols like # or . Just use simple text and new lines."
-        )
-
+       SYSTEM_PROMPT = (
+    "You are a Professional AI Career Mentor. "
+    "Your tone must be polite, encouraging, and professional. "
+    "Do NOT use slang or very casual language. "
+    "Provide constructive feedback. "
+    "Speak in clear English (or a very professional Hinglish only if the user asks). "
+    "Strictly avoid symbols like # and **. Use simple bullet points (-) for lists."
+)
         try:
             # History taiyar karna
             messages = [{"role": "system", "content": SYSTEM_PROMPT}]
@@ -130,4 +133,5 @@ class ResumeAnalysisView(APIView):
         except Exception as e:
             print(f"Server Error: {str(e)}")
             return Response({"error": f"AI analysis failed: {str(e)}"}, status=500)
+
 
