@@ -29,27 +29,30 @@ global_chat_history = []
 @method_decorator(csrf_exempt, name='dispatch')
 class ChatbotView(APIView):
     """Chatbot functionality with Groq AI."""
-    def post(self, request):
+   def post(self, request):
         global global_chat_history
         user_message = request.data.get('message', '').strip() 
+        
         if not user_message:
             return Response({"error": "No message provided"}, status=400)
-       SYSTEM_PROMPT = (
-    "You are a Professional AI Career Mentor. "
-    "Your tone must be polite, encouraging, and professional. "
-    "Do NOT use slang or very casual language. "
-    "Provide constructive feedback. "
-    "Speak in clear English (or a very professional Hinglish only if the user asks). "
-    "Strictly avoid symbols like # and **. Use simple bullet points (-) for lists."
-)
+
+        # ✅ Is line ki seedh (alignment) check kijiye
+        SYSTEM_PROMPT = (
+            "You are a Professional AI Career Mentor. "
+            "Your tone must be polite, encouraging, and professional. "
+            "Do NOT use slang or very casual language. "
+            "Provide constructive feedback. "
+            "Speak in clear English (or a very professional Hinglish only if the user asks). "
+            "Strictly avoid symbols like # and **. Use simple bullet points (-) for lists."
+        )
+
         try:
-            # History taiyar karna
+            # 8 spaces ka gap hona chahiye har line ke shuru mein niche:
             messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-            for msg in global_chat_history[-5:]: # Aakhri 5 baatein yaad rakhega
+            for msg in global_chat_history[-5:]:
                 messages.append(msg)
             messages.append({"role": "user", "content": user_message})
-
-            # Groq API Call
+            
             completion = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=messages,
@@ -133,5 +136,6 @@ class ResumeAnalysisView(APIView):
         except Exception as e:
             print(f"Server Error: {str(e)}")
             return Response({"error": f"AI analysis failed: {str(e)}"}, status=500)
+
 
 
