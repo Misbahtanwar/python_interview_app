@@ -6,5 +6,5 @@ from .views import ChatbotView, ResumeAnalysisView
 urlpatterns = [
     # Main project file mein /api/ laga hua hai, isliye yahaan /chat/ lagayenge
     path('chat/', ChatbotView.as_view(), name='chat'),
-    path('resume/analyze/', ResumeAnalysisView.as_view(), name='resume_analyze'), 
+  path('analyze-resume/', ResumeAnalysisView.as_view(), name='analyze-resume'),
 ]
