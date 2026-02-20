@@ -67,10 +67,10 @@ class ChatbotView(APIView):
         except Exception as e:
             print("Groq API Error:", str(e))
             return Response({"error": "AI response failed. Please try again."}, status=500)
-#class resume 
+# class resume 
 @method_decorator(csrf_exempt, name='dispatch') 
 class ResumeAnalysisView(APIView):
-    """Direct Analysis without Database Saving."""
+    """Direct Analysis without Database Saving (PDF & DOCX Supported)."""
 
     def post(self, request):
         try:
@@ -80,20 +80,40 @@ class ResumeAnalysisView(APIView):
 
             text_content = ""
             
-            # Direct Processing (Bina save kiye)
+            # --- 1. DOCX Processing ---
             if uploaded_file.name.endswith('.docx'):
-                document = Document(uploaded_file) # Direct file object use kiya
-                for paragraph in document.paragraphs:
-                    text_content += paragraph.text + '\n'
-            elif uploaded_file.name.endswith('.pdf'):
-                text_content = f"PDF File: {uploaded_file.name}. Analysis for Python/Django/Flutter stack."
-            else:
-                return Response({"error": "Unsupported file type."}, status=400)
+                try:
+                    document = Document(uploaded_file)
+                    for paragraph in document.paragraphs:
+                        text_content += paragraph.text + '\n'
+                except Exception as e:
+                    return Response({"error": f"DOCX Read Error: {str(e)}"}, status=500)
 
+            # --- 2. PDF Processing (Fixed Logic) ---
+            elif uploaded_file.name.endswith('.pdf'):
+                try:
+                    import PyPDF2
+                    pdf_reader = PyPDF2.PdfReader(uploaded_file)
+                    for page in pdf_reader.pages:
+                        extracted_text = page.extract_text()
+                        if extracted_text:
+                            text_content += extracted_text + "\n"
+                    
+                    # Agar PDF khali hai ya scan image hai
+                    if not text_content.strip():
+                        text_content = "Note: The PDF seems to be an image or empty. Please provide a text-based PDF."
+                except Exception as e:
+                    return Response({"error": f"PDF Read Error: {str(e)}"}, status=500)
+            
+            else:
+                return Response({"error": "Unsupported file type. Please upload DOCX or PDF."}, status=400)
+
+            # --- 3. AI Analysis Prompt ---
             ANALYSIS_PROMPT = (
-                "You are a professional Resume Analyzer for Python/Django Developers. "
-                "Analyze the following resume text and provide: "
-                "1. Overall Score (Out of 100), 2. Strengths, 3. Areas for Improvement. "
+                "You are a professional Technical Resume Analyzer. "
+                "Analyze the following resume text specifically for Python, Django, and Flutter roles. "
+                "Provide the output in three clear sections: "
+                "1. Overall Score (Out of 100), 2. Strengths (3 bullet points), 3. Areas for Improvement (3 bullet points). "
                 f"\n\nRESUME TEXT:\n---\n{text_content}"
             )
             
@@ -103,6 +123,7 @@ class ResumeAnalysisView(APIView):
                 messages=[{"role": "user", "content": ANALYSIS_PROMPT}]
             )
             
+            # Final Result
             return Response({
                 "message": "Analysis Complete!",
                 "full_resume_text": text_content, 
@@ -110,4 +131,5 @@ class ResumeAnalysisView(APIView):
             }, status=200)
 
         except Exception as e:
+            print(f"Server Error: {str(e)}")
             return Response({"error": f"AI analysis failed: {str(e)}"}, status=500)
