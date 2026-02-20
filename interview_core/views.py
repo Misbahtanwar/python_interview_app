@@ -36,9 +36,7 @@ class ChatbotView(APIView):
             return Response({"error": "No message provided"}, status=400)
         
         SYSTEM_PROMPT = (
-            "You are an expert Technical Interviewer focusing strictly on Python, Django, and Flutter. "
-            "Your goal is to assess the user's technical profile. Provide concise, interview-ready answers. "
-            "Use bullet points for quick summaries whenever possible."
+           "You are a helpful Interviewer. **Talk like a human. Do not use symbols like # or . Just use simple text and new lines."
         )
 
         try:
@@ -109,11 +107,10 @@ class ResumeAnalysisView(APIView):
                 return Response({"error": "Unsupported file type. Please upload DOCX or PDF."}, status=400)
 
             # --- 3. AI Analysis Prompt ---
+           
             ANALYSIS_PROMPT = (
-                "You are a professional Technical Resume Analyzer. "
-                "Analyze the following resume text specifically for Python, Django, and Flutter roles. "
-                "Provide the output in three clear sections: "
-                "1. Overall Score (Out of 100), 2. Strengths (3 bullet points), 3. Areas for Improvement (3 bullet points). "
+                "Analyze this resume. Provide: 1. Overall Score, 2. Strengths, 3. Areas for Improvement. "
+                "IMPORTANT: Use ONLY plain text. Do NOT use # or ** symbols. Use simple dashes (-) for points. "
                 f"\n\nRESUME TEXT:\n---\n{text_content}"
             )
             
@@ -133,3 +130,4 @@ class ResumeAnalysisView(APIView):
         except Exception as e:
             print(f"Server Error: {str(e)}")
             return Response({"error": f"AI analysis failed: {str(e)}"}, status=500)
+
