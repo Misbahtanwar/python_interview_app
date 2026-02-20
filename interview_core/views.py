@@ -67,11 +67,10 @@ class ChatbotView(APIView):
         except Exception as e:
             print("Groq API Error:", str(e))
             return Response({"error": "AI response failed. Please try again."}, status=500)
-
-# 2. RESUMEANALYSISVIEW: (Resume analyzer logic)
+#class resume 
 @method_decorator(csrf_exempt, name='dispatch') 
 class ResumeAnalysisView(APIView):
-    """Handles file upload and analysis via Groq."""
+    """Direct Analysis without Database Saving."""
 
     def post(self, request):
         try:
@@ -79,17 +78,15 @@ class ResumeAnalysisView(APIView):
             if not uploaded_file:
                 return Response({"error": "No file uploaded."}, status=400)
 
-            # Database mein save
-            uploaded_file_record = UploadedFile.objects.create(file=uploaded_file)
             text_content = ""
             
-            # File processing
+            # Direct Processing (Bina save kiye)
             if uploaded_file.name.endswith('.docx'):
-                document = Document(uploaded_file_record.file) 
+                document = Document(uploaded_file) # Direct file object use kiya
                 for paragraph in document.paragraphs:
                     text_content += paragraph.text + '\n'
             elif uploaded_file.name.endswith('.pdf'):
-                text_content = f"The user uploaded a PDF named {uploaded_file.name}. Analysis for Python/Django profile."
+                text_content = f"PDF File: {uploaded_file.name}. Analysis for Python/Django/Flutter stack."
             else:
                 return Response({"error": "Unsupported file type."}, status=400)
 
@@ -100,7 +97,7 @@ class ResumeAnalysisView(APIView):
                 f"\n\nRESUME TEXT:\n---\n{text_content}"
             )
             
-            # Groq Call for analysis
+            # Groq Call
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[{"role": "user", "content": ANALYSIS_PROMPT}]
@@ -113,6 +110,4 @@ class ResumeAnalysisView(APIView):
             }, status=200)
 
         except Exception as e:
-            if 'uploaded_file_record' in locals():
-                uploaded_file_record.delete() 
-            return Response({"error": f"Analysis failed: {e}"}, status=500)
+            return Response({"error": f"AI analysis failed: {str(e)}"}, status=500)
